@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 3010;
+const port = process.env.PORT || 3011;
 const bodyParser = require("body-parser");
 const cors = require('cors');
 
@@ -24,7 +24,9 @@ const server = app.listen(port, function () {
 });
 
 app.get('/', function (request, response) {
-    response.send({});
+    const result = {};
+    console.log({result: result})
+    response.send(result);
 });
 
 // Retrieves a single image from the Gallery Api
@@ -38,4 +40,6 @@ app.use('/api/gallery/category', require('./routes/gallery/gallery_category'));
 app.use('/api/gallery', require('./routes/gallery/gallery'));
 
 app.use('/api/authenticate', require('./routes/authentication/authenticate'));
+
+app.use('/api/login/authenticate', require('./routes/login/authenticate'));
 
