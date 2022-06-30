@@ -2,7 +2,7 @@ const sql = require("mssql");
 const configs = require('../../config');
 const path = require('path');
 const router = require('express').Router();
-const login = require('../login/login_functions');
+const login = require('./login_functions');
 
 
 router.post("/:siteid", async (request, response) => {
@@ -19,15 +19,17 @@ router.post("/:siteid", async (request, response) => {
         if(loginUser && loginUser.AuthID){
             await login.updateUserLoginInfo(config, body.username, body.emailaddress, params.siteid, loginUser.AuthID);
         }
-
+        const payload = loginUser;
+        /*
         const payload = {
             loginUser:loginUser, params:params, body:body, config: (config ? config.options : false)
         };
+        */
 
         return response.send(payload);
     }
     catch (err) {
-        return response.send({error: "an error has occured! ", err:err});
+        return response.send({error: "an error has occured! "});
     }
 });
 

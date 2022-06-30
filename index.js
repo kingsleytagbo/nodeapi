@@ -43,3 +43,6 @@ app.use('/api/authenticate', require('./routes/authentication/authenticate'));
 
 app.use('/api/login/authenticate', require('./routes/login/authenticate'));
 
+// use this to test the authid token
+app.use('/api/login/authorize', require('./routes/login/authorize'));
+

@@ -3,19 +3,6 @@ const sql = require("mssql");
 
 const LoginFunctions = {
 
-    getAuthentication: async (config, userToken, userId, websiteId) => {
-        try {
-            await sql.connect(config);
-            let query = 'SELECT TOP 1 UserToken FROM [ITCC_User] ';
-            query += ' WHERE (ITCC_UserID = ' + Number(userId) + ') ';
-            query += ' AND (UserToken = CAST(' + "'" + userToken + "'" + ' AS UNIQUEIDENTIFIER) ) ';
-            const result = await sql.query(query);
-            return result;
-        } catch (err) {
-            throw err
-        }
-    },
-
     getUserByLogin: async (config, username, password, privateKeyID) => {
         privateKeyID = privateKeyID ? String(privateKeyID).trim().toLowerCase() : privateKeyID;
         username = username ? String(username).trim().toLowerCase() : username;
@@ -53,7 +40,6 @@ const LoginFunctions = {
         username = username ? String(username).trim().toLowerCase() : username;
         password = password ? String(password).trim() : password;
 
-
         try {
             await sql.connect(config);
             let query = ' UPDATE ITCC_USER SET ' ;
@@ -72,6 +58,30 @@ const LoginFunctions = {
 
         } catch (err) {
             //console.log({updateUserLoginInfo: err});
+            throw err
+        }
+    },
+
+    getUserByAuthToken: async (config, privateKeyID, authId) => {
+        privateKeyID = privateKeyID ? String(privateKeyID).trim().toLowerCase() : privateKeyID;
+
+        try {
+            await sql.connect(config);
+            let query = ' SELECT US.*';
+            query += ' FROM [ITCC_User] US (NOLOCK) JOIN [ITCC_WebsiteUser] WU (NOLOCK) ';
+            query += ' ON (US.ITCC_UserID = WU.ITCC_UserID) ';
+            query += ' JOIN [ITCC_Website] WS (NOLOCK) ON (WU.ITCC_WebsiteID = WS.ITCC_WebsiteID) ';
+            query +=   ' WHERE ( ' +
+            ' ( CONVERT(VARCHAR(38),US.UserToken) = ' + "'" + authId + "'" + ' ) ' +
+            ' AND ( CONVERT(VARCHAR(38),WS.PrivateKeyID) = ' + "'" + privateKeyID + "'" + ' ) ' +
+            ') ';
+
+            // console.log(query);
+            const result = await sql.query(query);
+            return result;
+
+        } catch (err) {
+            //console.log({getUserByLogin: err});
             throw err
         }
     }
