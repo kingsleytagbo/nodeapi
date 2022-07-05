@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 3011;
+const port = process.env.PORT || 3010;
 const bodyParser = require("body-parser");
 const cors = require('cors');
 
@@ -45,4 +45,6 @@ app.use('/api/login/authenticate', require('./routes/login/authenticate'));
 
 // use this to test the authid token
 app.use('/api/login/authorize', require('./routes/login/authorize'));
+
+app.use('/api/users', require('./routes/users/index'));
 
