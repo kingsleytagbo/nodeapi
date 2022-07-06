@@ -19,7 +19,6 @@ router.get("/:siteid/page/:pagenum?", async function (request, response) {
     const authResult = await users.getUsers(config, siteid, offset, pageSize);
     const result =  authResult.recordset;
 
-    
     return response.send(result);
 });
 
@@ -27,10 +26,6 @@ router.get("/:siteid/page/:pagenum?", async function (request, response) {
 router.get("/:siteid/:id", async function (request, response) {
     const siteid = request.params.siteid;
     const id = request.params.id;
-    const pageNum = (request.params.pagenum) ? request.params.pagenum : 1;
-    const pageSize = 20; 
-    const offset = (pageNum - 1) * pageSize;
-
     const config = configs.find(c => c.privateKeyID === siteid);
 
     const authResult = await users.getUser(config, siteid, id);
@@ -57,8 +52,17 @@ router.post("/:siteid", async function (request, response) {
 });
 
 // delete a user
-router.delete("/:siteid/:id", function (request, response) {
-    return response.send({'users/delete/a/user': new Date(), id: request.params.id});
+router.delete("/:siteid/:id", async function (request, response) {
+    const siteid = request.params.siteid;
+    const id = request.params.id;
+
+    const config = configs.find(c => c.privateKeyID === siteid);
+    if(id > 1){
+        const authResult = await users.deleteUser(config, siteid, id);
+        const result =  authResult.recordset;
+        return response.send(result);
+    }
+    else return response.send({'users/delete/a/user': new Date(), id: request.params.id});
 });
 
 // update a user
