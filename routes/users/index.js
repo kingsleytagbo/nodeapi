@@ -40,12 +40,15 @@ router.post("/:siteid", async function (request, response) {
     const id = request.params.id;
     const firstname = request.body.firstname;
     const lastname = request.body.lastname;
+    const username = request.body.username;
+    const emailaddress = request.body.emailaddress;
+    console.log({body: request.body});
 
     const config = configs.find(c => c.privateKeyID === siteid);
 
     const authResult = await users.createUser(config, siteid, 
-        'username', 'firstname', 'lastname', 'email', 1, 1, 0,
-        'password', 1, 1, 1);
+        username, username, username, emailaddress, 1, 1, 0,
+        emailaddress, 1, 1, 1);
     const result =  authResult.recordset;
 
     return response.send(result);
@@ -68,13 +71,14 @@ router.delete("/:siteid/:id", async function (request, response) {
 // update a user
 router.put("/:siteid/:id", async function (request, response) {
     const siteid = request.params.siteid;
-    const id = request.params.id;
-    const firstname = request.body.firstname;
-    const lastname = request.body.lastname;
+    const id = request.body.id;
+    const username = request.body.username;
+    const emailaddress = request.body.emailaddress;
+    //console.log({body: request.body, params: request.params})
 
     const config = configs.find(c => c.privateKeyID === siteid);
 
-    const authResult = await users.updateUser(config, siteid, id, firstname, lastname);
+    const authResult = await users.updateUser(config, siteid, id, username, emailaddress);
     const result =  authResult.recordset;
 
     return response.send(result);

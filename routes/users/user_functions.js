@@ -65,21 +65,21 @@ const UserFunctions = {
         }
     },
 
-    updateUser: async (config, privateKeyID, firstName, lastName) => {
+    updateUser: async (config, privateKeyID, id, username, emailaddress) => {
         privateKeyID = privateKeyID ? String(privateKeyID).trim().toLowerCase() : privateKeyID;
 
         try {
             await sql.connect(config);
             let query = ' UPDATE ITCC_USER SET ';
-            query += ' FirstName = @FirstName, LastName = @LastName ';
+            query += ' Username = @Username, EmailAddress = @EmailAddress ';
             query += ' WHERE ( ' +
                 ' ( ITCC_USERID = @ID ) ' +
                 '); SELECT @@ROWCOUNT; ';
 
             const request = new sql.Request();
             request.input('id', sql.Int, id);
-            request.input('FirstName', sql.NVarChar(64), firstName);
-            request.input('LastName', sql.NVarChar(128), lastName);
+            request.input('Username', sql.NVarChar(64), username);
+            request.input('EmailAddress', sql.NVarChar(64), emailaddress);
             const result = await request.query(query);
             return result;
 
