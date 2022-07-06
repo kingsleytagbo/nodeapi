@@ -16,21 +16,32 @@ router.get("/:siteid/page/:pagenum?", async function (request, response) {
 
     const config = configs.find(c => c.privateKeyID === siteid);
 
-    const authResult = await users.getAllUsers(config, siteid, offset, pageSize);
-    const authUsers =  authResult.recordset;
+    const authResult = await users.getUsers(config, siteid, offset, pageSize);
+    const result =  authResult.recordset;
 
     
-    return response.send(authUsers);
+    return response.send(result);
 });
 
 // get one user
-router.get("/:siteid/:id", function (request, response) {
-    return response.send({'users/getone/user': new Date(), id: request.params.id});
+router.get("/:siteid/:id", async function (request, response) {
+    const siteid = request.params.siteid;
+    const id = request.params.id;
+    const pageNum = (request.params.pagenum) ? request.params.pagenum : 1;
+    const pageSize = 20; 
+    const offset = (pageNum - 1) * pageSize;
+
+    const config = configs.find(c => c.privateKeyID === siteid);
+
+    const authResult = await users.getUser(config, siteid, id);
+    const result =  authResult.recordset;
+    
+    return response.send(result);
 });
 
 // create a user
 router.post("/:siteid", function (request, response) {
-    return response.send({'users/create/user': new Date(), body: request.body});
+    return response.send({'users/create/user': new Date(), body: []});
 });
 
 // delete a user
@@ -39,8 +50,18 @@ router.delete("/:siteid/:id", function (request, response) {
 });
 
 // update a user
-router.put("/:siteid/:id", function (request, response) {
-    return response.send({'users/update/user': new Date(), id: request.params.id, body: request.body});
+router.put("/:siteid/:id", async function (request, response) {
+    const siteid = request.params.siteid;
+    const id = request.params.id;
+    const firstname = request.body.firstname;
+    const lastname = request.body.lastname;
+
+    const config = configs.find(c => c.privateKeyID === siteid);
+
+    const authResult = await users.updateUser(config, siteid, id, firstname, lastname);
+    const result =  authResult.recordset;
+
+    return response.send(result);
 });
 
 module.exports = router;
