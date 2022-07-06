@@ -131,7 +131,6 @@ const UserFunctions = {
             request.input('PrivateKeyID', sql.UniqueIdentifier, privateKeyID);
             request.input('id', sql.Int, id);
             const result = await request.query(query);
-            console.log({result: result, query: query});
             return result;
 
         } catch (err) {
