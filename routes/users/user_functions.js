@@ -4,33 +4,33 @@ const sql = require("mssql");
 const UserFunctions = {
 
     getUsers: async (config, privateKeyID, offset, pageSize) => {
-        privateKeyID = privateKeyID ? String(privateKeyID).trim().toLowerCase() : privateKeyID;
-
         try {
             await sql.connect(config);
             let query = ' SELECT US.*';
             query += ' FROM [ITCC_User] US (NOLOCK) JOIN [ITCC_WebsiteUser] WU (NOLOCK) ';
             query += ' ON (US.ITCC_UserID = WU.ITCC_UserID) ';
             query += ' JOIN [ITCC_Website] WS (NOLOCK) ON (WU.ITCC_WebsiteID = WS.ITCC_WebsiteID) ';
-            query += ' WHERE ( ' +
-                ' ( CONVERT(VARCHAR(38),WS.PrivateKeyID) = ' + "'" + privateKeyID + "'" + ' ) ' +
-                ') ';
+            query += ' WHERE (WS.PrivateKeyID = @PrivateKeyID) ';
             query += ' ORDER BY US.UserName Desc ';
-            query += ' OFFSET ' + offset + ' ROWS ';
-            query += ' FETCH NEXT ' + pageSize + ' ROWS ONLY ';
+            query += ' OFFSET @Offset ROWS ';
+            query += ' FETCH NEXT @PageSize ROWS ONLY ';
 
-            // console.log(query);
-            const result = await sql.query(query);
+            const request = new sql.Request();
+            request.input('PrivateKeyID', sql.UniqueIdentifier, privateKeyID);
+            request.input('Offset', sql.Int, offset);
+            request.input('PageSize', sql.Int, pageSize);
+
+            // console.log({privateKeyID: privateKeyID, offset: offset, pageSize: pageSize});
+            const result = await request.query(query);
             return result;
 
         } catch (err) {
-            //console.log({getUserByLogin: err});
+            //console.log({getUsers: err});
             throw err
         }
     },
 
     getUser: async (config, privateKeyID, id) => {
-        privateKeyID = privateKeyID ? String(privateKeyID).trim().toLowerCase() : privateKeyID;
 
         try {
             await sql.connect(config);
@@ -39,16 +39,16 @@ const UserFunctions = {
             query += ' ON (US.ITCC_UserID = WU.ITCC_UserID) ';
             query += ' JOIN [ITCC_Website] WS (NOLOCK) ON (WU.ITCC_WebsiteID = WS.ITCC_WebsiteID) ';
             query += ' WHERE ( ' +
-                ' ( US.ITCC_USERID = @ID ) ' +
+                ' (US.ITCC_USERID = @ID) AND (WS.PrivateKeyID = @PrivateKeyID) ' +
                 ') ';
 
             const request = new sql.Request();
+            request.input('PrivateKeyID', sql.UniqueIdentifier, privateKeyID);
             request.input('id', sql.Int, id);
             const result = await request.query(query);
             return result;
 
         } catch (err) {
-            //console.log({getUserByLogin: err});
             throw err
         }
     },
@@ -72,7 +72,6 @@ const UserFunctions = {
             return result;
 
         } catch (err) {
-            //console.log({getUserByLogin: err});
             throw err
         }
     },
@@ -126,7 +125,6 @@ const UserFunctions = {
             return result;
 
         } catch (err) {
-            //console.log({getUserByLogin: err});
             throw err
         }
     },
