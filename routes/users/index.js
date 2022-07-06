@@ -40,8 +40,20 @@ router.get("/:siteid/:id", async function (request, response) {
 });
 
 // create a user
-router.post("/:siteid", function (request, response) {
-    return response.send({'users/create/user': new Date(), body: []});
+router.post("/:siteid", async function (request, response) {
+    const siteid = request.params.siteid;
+    const id = request.params.id;
+    const firstname = request.body.firstname;
+    const lastname = request.body.lastname;
+
+    const config = configs.find(c => c.privateKeyID === siteid);
+
+    const authResult = await users.createUser(config, siteid, 
+        'username', 'firstname', 'lastname', 'email', 1, 1, 0,
+        'password', 1, 1, 1);
+    const result =  authResult.recordset;
+
+    return response.send(result);
 });
 
 // delete a user
