@@ -1,16 +1,28 @@
 
 const sql = require("mssql");
+const roleNames = "'anonymous', 'subscriber'";
 
 const UserFunctions = {
 
     getUsers: async (config, privateKeyID, offset, pageSize) => {
         try {
             await sql.connect(config);
-            let query = ' SELECT US.*';
+            const roleQuery = 
+            "   RoleNames = STUFF( " +
+            "    ( " +
+            "         SELECT CONCAT(',', R.Name) " +
+            "         FROM ITCC_Role R(NOLOCK) JOIN ITCC_UserRole UR (NOLOCK) ON (R.ITCC_RoleID = UR.ITCC_RoleID) " +
+            "        WHERE r.ITCC_RoleID = ur.ITCC_RoleID " +
+            "        FOR XML PATH('')),1,1,'' " +
+            "     ) ";
+
+            let query = ' SELECT DISTINCT ' + roleQuery + ', US.* ';
             query += ' FROM [ITCC_User] US (NOLOCK) JOIN [ITCC_WebsiteUser] WU (NOLOCK) ';
             query += ' ON (US.ITCC_UserID = WU.ITCC_UserID) ';
             query += ' JOIN [ITCC_Website] WS (NOLOCK) ON (WU.ITCC_WebsiteID = WS.ITCC_WebsiteID) ';
-            query += ' WHERE (WS.PrivateKeyID = @PrivateKeyID) ';
+            query += ' JOIN [ITCC_USERROLE] UR (NOLOCK) ON (WS.ITCC_WebsiteID = UR.ITCC_WebsiteID) ';
+            query += ' JOIN [ITCC_ROLE] RL (NOLOCK) ON (UR.ITCC_ROLEID = RL.ITCC_ROLEID) ';
+            query += ' WHERE ( (WS.PrivateKeyID = @PrivateKeyID) ) ';
             query += ' ORDER BY US.UserName Desc ';
             query += ' OFFSET @Offset ROWS ';
             query += ' FETCH NEXT @PageSize ROWS ONLY ';
@@ -19,7 +31,7 @@ const UserFunctions = {
             request.input('PrivateKeyID', sql.UniqueIdentifier, privateKeyID);
             request.input('Offset', sql.Int, offset);
             request.input('PageSize', sql.Int, pageSize);
-
+           
             // console.log({privateKeyID: privateKeyID, offset: offset, pageSize: pageSize});
             const result = await request.query(query);
             return result;
@@ -76,12 +88,36 @@ const UserFunctions = {
         }
     },
 
+    deleteUser: async (config, privateKeyID, id) => {
+
+        try {
+            await sql.connect(config);
+            let query = ' DELETE US.*';
+            query += ' FROM [ITCC_User] US (NOLOCK) JOIN [ITCC_WebsiteUser] WU (NOLOCK) ';
+            query += ' ON (US.ITCC_UserID = WU.ITCC_UserID) ';
+            query += ' JOIN [ITCC_Website] WS (NOLOCK) ON (WU.ITCC_WebsiteID = WS.ITCC_WebsiteID) ';
+            query += ' JOIN [ITCC_USERROLE] UR (NOLOCK) ON (WS.ITCC_WebsiteID = UR.ITCC_WebsiteID) ';
+            query += ' JOIN [ITCC_ROLE] IR (NOLOCK) ON (UR.ITCC_ROLEID = IR.ITCC_ROLEID) ';
+            query += ' WHERE ( ' +
+                ' (US.ITCC_USERID = @ID) AND (WS.PrivateKeyID = @PrivateKeyID) AND (US.ITCC_USERID > 1) ' +
+                ') ';
+
+            const request = new sql.Request();
+            request.input('PrivateKeyID', sql.UniqueIdentifier, privateKeyID);
+            request.input('id', sql.Int, id);
+            const result = await request.query(query);
+            return result;
+
+        } catch (err) {
+            throw err
+        }
+    },
+
     createUser: async (config, privateKeyID, 
         username, firstname, lastname, email, isonline, isapproved, islockedout,
         password, statusid, createuserid, modifyuserid) => {
         privateKeyID = privateKeyID ? String(privateKeyID).trim().toLowerCase() : privateKeyID;
 
-        const roleNames = "'anonymous', 'subscriber'";
         try {
             await sql.connect(config);
             let query = ' SELECT @SiteID = ITCC_WebsiteID FROM ITCC_WEBSITE (NOLOCK) WHERE (PrivateKeyID = @PrivateKeyID) ';
