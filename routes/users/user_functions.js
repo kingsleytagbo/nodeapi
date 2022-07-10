@@ -8,15 +8,13 @@ const UserFunctions = {
         try {
             await sql.connect(config);
             const roleQuery =
-                "   RoleNames = STUFF( " +
-                "    ( " +
-                "         SELECT CONCAT(',', R.Name) " +
-                "         FROM ITCC_Role R(NOLOCK) JOIN ITCC_UserRole UR (NOLOCK) ON (R.ITCC_RoleID = UR.ITCC_RoleID) " +
-                "        WHERE r.ITCC_RoleID = ur.ITCC_RoleID " +
-                "        FOR XML PATH('')),1,1,'' " +
-                "     ) ";
+            ' RoleName = STUFF( ( ' +
+            '    SELECT  ' + "'" + ','  + "'" + ' + R.Name ' + ' FROM ITCC_Role R(NOLOCK) JOIN ITCC_UserRole UR (NOLOCK) ON (R.ITCC_RoleID = UR.ITCC_RoleID) ' +
+            '                JOIN ITCC_Website W1 (NOLOCK) ON (UR.ITCC_WebsiteID = W1.ITCC_WebsiteID) ' +
+            '    WHERE ( (UR.ITCC_UserID = WU.ITCC_UserID) AND (W1.PrivateKeyID = ' + "'" + privateKeyID + "'" + ' ) ) ' +
+            '    FOR XML PATH(' + "''" + ') ) ' + ' ,1,1, ' + " '') ";
 
-            let query = ' SELECT DISTINCT ' + roleQuery + ', US.* ';
+            let query = ' SELECT ' + roleQuery + ', US.* ';
             query += ' FROM [ITCC_User] US (NOLOCK) JOIN [ITCC_WebsiteUser] WU (NOLOCK) ';
             query += ' ON (US.ITCC_UserID = WU.ITCC_UserID) ';
             query += ' JOIN [ITCC_Website] WS (NOLOCK) ON (WU.ITCC_WebsiteID = WS.ITCC_WebsiteID) ';
@@ -32,7 +30,7 @@ const UserFunctions = {
             request.input('Offset', sql.Int, offset);
             request.input('PageSize', sql.Int, pageSize);
 
-            // console.log({privateKeyID: privateKeyID, offset: offset, pageSize: pageSize});
+            //console.log({getUsers: query, privateKeyID: privateKeyID, offset: offset, pageSize: pageSize});
             const result = await request.query(query);
             return result;
 

@@ -12,7 +12,7 @@ const LoginFunctions = {
             await sql.connect(config);
             let query = ' SELECT US.UserToken, ISNULL(US.LastLoginDate, GETDATE()) AS LastLoginDate, ';
             query += ' DATEDIFF(mi, ISNULL(US.LastLoginDate, GETDATE()), GETDATE()) AS TimeDiffMin, NewID() AS AuthID ';
-            query += ' ,WU.ITCC_WebsiteID ,US.ITCC_UserID, WS.Title AS WebsiteName' +
+            query += ' ,WU.ITCC_WebsiteID ,US.ITCC_UserID, WS.Title AS WebsiteName, US.UserName' +
             ' ,RoleName = ( ' +
             '    SELECT R.Name + ' + "'" + ','  + "'" + ' FROM ITCC_Role R(NOLOCK) JOIN ITCC_UserRole UR (NOLOCK) ON (R.ITCC_RoleID = UR.ITCC_RoleID) ' +
             '                JOIN ITCC_Website W1 (NOLOCK) ON (UR.ITCC_WebsiteID = W1.ITCC_WebsiteID) ' +
@@ -25,7 +25,7 @@ const LoginFunctions = {
             ' (RTRIM(LTRIM(LOWER(US.UserName))) = ' + "'" + username + "'" + ' ) AND (RTRIM(LTRIM(US.Password)) = ' + "'" + password + "'" + ') ' +
             ' AND (WS.PrivateKeyID = ' + "'" + privateKeyID + "'" + ' ) ' +
             ') ';
-
+           // console.log({getUserByLogin: query});
             const result = await sql.query(query);
             return result;
 
