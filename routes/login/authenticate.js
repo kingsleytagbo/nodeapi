@@ -1,7 +1,5 @@
-const sql = require("mssql");
-const configs = require('../../config');
-const path = require('path');
 const router = require('express').Router();
+const configs = require('../../config');
 const login = require('./login_functions');
 
 
@@ -20,16 +18,11 @@ router.post("/:siteid", async (request, response) => {
             await login.updateUserLoginInfo(config, body.username, body.emailaddress, params.siteid, loginUser.AuthID);
         }
         const payload = loginUser;
-        /*
-        const payload = {
-            loginUser:loginUser, params:params, body:body, config: (config ? config.options : false)
-        };
-        */
-
+        
         return response.send(payload);
     }
     catch (err) {
-        return response.send({error: "an error has occured! "});
+        return response.send({error: 'an error has occured'});
     }
 });
 

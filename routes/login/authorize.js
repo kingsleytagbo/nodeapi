@@ -1,7 +1,5 @@
-const sql = require("mssql");
-const configs = require('../../config');
-const path = require('path');
 const router = require('express').Router();
+const configs = require('../../config');
 const login = require('./login_functions');
 
 // check if an AUTHID or Token is valid
@@ -20,7 +18,8 @@ router.post("/:siteid", async (request, response) => {
         return response.send(payload);
     }
     catch (err) {
-        return response.send({error: "an error has occured! "});
+        throw err;
+        //return response.send({error: "an error has occured! "});
     }
 });
 

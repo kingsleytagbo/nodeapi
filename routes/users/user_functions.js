@@ -3,10 +3,11 @@ const sql = require("mssql");
 const roleNames = "'anonymous', 'subscriber'";
 
 const UserFunctions = {
-    /*
-        SELECT a paged list of users & associated roles from SQL Server
-    */
+
     getUsers: async (config, privateKeyID, offset, pageSize) => {
+        /*
+            SELECT a paged list of users & associated roles from SQL Server
+        */
         try {
             await sql.connect(config);
             const roleQuery =

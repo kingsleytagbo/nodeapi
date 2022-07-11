@@ -1,6 +1,5 @@
 const router = require('express').Router();
 const configs = require('../../config');
-const authorize = require('../authentication/authorize');
 const users = require('./user_functions');
 
 
