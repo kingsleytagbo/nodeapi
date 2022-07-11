@@ -9,6 +9,7 @@ const config = [
             enableArithAbort: true
         }
     },
+
     
 ];
 

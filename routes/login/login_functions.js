@@ -10,14 +10,22 @@ const LoginFunctions = {
 
         try {
             await sql.connect(config);
+            const roleQuery = ' RoleName = STUFF( ( ' +
+            '    SELECT  ' + "'" + ','  + "'" + ' + R.Name ' + ' FROM ITCC_Role R(NOLOCK) JOIN ITCC_UserRole UR (NOLOCK) ON (R.ITCC_RoleID = UR.ITCC_RoleID) ' +
+            '                JOIN ITCC_Website W1 (NOLOCK) ON (UR.ITCC_WebsiteID = W1.ITCC_WebsiteID) ' +
+            '    WHERE ( (UR.ITCC_UserID = WU.ITCC_UserID) AND (W1.PrivateKeyID = ' + "'" + privateKeyID + "'" + ' ) ) ' +
+            '    FOR XML PATH(' + "''" + ') ) ' + ' ,1,1, ' + " '') ";
             let query = ' SELECT US.UserToken, ISNULL(US.LastLoginDate, GETDATE()) AS LastLoginDate, ';
             query += ' DATEDIFF(mi, ISNULL(US.LastLoginDate, GETDATE()), GETDATE()) AS TimeDiffMin, NewID() AS AuthID ';
-            query += ' ,WU.ITCC_WebsiteID ,US.ITCC_UserID, WS.Title AS WebsiteName, US.UserName' +
+            query += ' ,WU.ITCC_WebsiteID ,US.ITCC_UserID, WS.Title AS WebsiteName, US.UserName' ;
+            query += ' , ' + roleQuery;
+            /*
             ' ,RoleName = ( ' +
             '    SELECT R.Name + ' + "'" + ','  + "'" + ' FROM ITCC_Role R(NOLOCK) JOIN ITCC_UserRole UR (NOLOCK) ON (R.ITCC_RoleID = UR.ITCC_RoleID) ' +
             '                JOIN ITCC_Website W1 (NOLOCK) ON (UR.ITCC_WebsiteID = W1.ITCC_WebsiteID) ' +
             '    WHERE ( (UR.ITCC_UserID = WU.ITCC_UserID) AND (W1.PrivateKeyID = ' + "'" + privateKeyID + "'" + ' ) ) ' +
             '    FOR XML PATH(' + "''" + ') ) ';
+            */
             query += ' FROM [ITCC_User] US (NOLOCK) JOIN [ITCC_WebsiteUser] WU (NOLOCK) ';
             query += ' ON (US.ITCC_UserID = WU.ITCC_UserID) ';
             query += ' JOIN [ITCC_Website] WS (NOLOCK) ON (WU.ITCC_WebsiteID = WS.ITCC_WebsiteID) ';

@@ -3,15 +3,17 @@ const sql = require("mssql");
 const roleNames = "'anonymous', 'subscriber'";
 
 const UserFunctions = {
-
+    /*
+        SELECT a paged list of users & associated roles from SQL Server
+    */
     getUsers: async (config, privateKeyID, offset, pageSize) => {
         try {
             await sql.connect(config);
             const roleQuery =
-            ' RoleName = STUFF( ( ' +
+            ' RoleNames = STUFF( ( ' +
             '    SELECT  ' + "'" + ','  + "'" + ' + R.Name ' + ' FROM ITCC_Role R(NOLOCK) JOIN ITCC_UserRole UR (NOLOCK) ON (R.ITCC_RoleID = UR.ITCC_RoleID) ' +
             '                JOIN ITCC_Website W1 (NOLOCK) ON (UR.ITCC_WebsiteID = W1.ITCC_WebsiteID) ' +
-            '    WHERE ( (UR.ITCC_UserID = WU.ITCC_UserID) AND (W1.PrivateKeyID = ' + "'" + privateKeyID + "'" + ' ) ) ' +
+            '    WHERE ( (UR.ITCC_UserID = WU.ITCC_UserID) AND (W1.PrivateKeyID = @PrivateKeyID) ) ' +
             '    FOR XML PATH(' + "''" + ') ) ' + ' ,1,1, ' + " '') ";
 
             let query = ' SELECT ' + roleQuery + ', US.* ';
@@ -40,6 +42,9 @@ const UserFunctions = {
         }
     },
 
+    /*
+        SELECTS a singLe user & associated roles from SQL Server
+    */
     getUser: async (config, privateKeyID, id) => {
 
         try {
@@ -54,7 +59,7 @@ const UserFunctions = {
 
             const request = new sql.Request();
             request.input('PrivateKeyID', sql.UniqueIdentifier, privateKeyID);
-            request.input('id', sql.Int, id);
+            request.input('ID', sql.Int, id);
             const result = await request.query(query);
             return result;
 
@@ -63,6 +68,9 @@ const UserFunctions = {
         }
     },
 
+    /*
+        Updates a singLe user's information on SQL Server
+    */
     updateUser: async (config, privateKeyID, id, username, emailaddress) => {
         privateKeyID = privateKeyID ? String(privateKeyID).trim().toLowerCase() : privateKeyID;
 
@@ -75,7 +83,7 @@ const UserFunctions = {
                 '); SELECT @@ROWCOUNT; ';
 
             const request = new sql.Request();
-            request.input('id', sql.Int, id);
+            request.input('ID', sql.Int, id);
             request.input('Username', sql.NVarChar(64), username);
             request.input('EmailAddress', sql.NVarChar(64), emailaddress);
             const result = await request.query(query);
@@ -86,6 +94,9 @@ const UserFunctions = {
         }
     },
 
+    /*
+        Deletes a singLe non-admin user's information on SQL Server  
+    */
     deleteUser: async (config, privateKeyID, id) => {
 
         try {
@@ -127,7 +138,7 @@ const UserFunctions = {
 
             const request = new sql.Request();
             request.input('PrivateKeyID', sql.UniqueIdentifier, privateKeyID);
-            request.input('id', sql.Int, id);
+            request.input('ID', sql.Int, id);
             const result = await request.query(query);
             return result;
 
@@ -136,6 +147,9 @@ const UserFunctions = {
         }
     },
 
+    /*
+        Creates a singLe user's information on SQL Server
+    */
     createUser: async (config, privateKeyID,
         username, firstname, lastname, email, isonline, isapproved, islockedout,
         password, statusid, createuserid, modifyuserid) => {
