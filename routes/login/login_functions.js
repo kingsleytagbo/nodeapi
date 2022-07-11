@@ -31,10 +31,10 @@ const LoginFunctions = {
             const request = new sql.Request();
 
             request.input('PrivateKeyID', sql.UniqueIdentifier, privateKeyID);
-            request.input('AuthID', sql.UniqueIdentifier, authID);
             request.input('Username', sql.NVarChar(64), username);
             request.input('Password', sql.NVarChar(64), password);
 
+            const result = await request.query(query);
             return result;
 
         } catch (err) {

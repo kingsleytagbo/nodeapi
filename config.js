@@ -9,7 +9,7 @@ const config = [
             enableArithAbort: true
         }
     },
-    
+
 ];
 
 module.exports = config;
