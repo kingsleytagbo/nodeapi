@@ -3,6 +3,10 @@ const sql = require("mssql");
 
 const LoginFunctions = {
 
+    /*
+        Authenticate's a User's Login Info based on their UserName & Password & 
+        Select the User's authentication & associated roles from SQL Server
+    */
     getUserByLogin: async (config, username, password, privateKeyID) => {
         privateKeyID = privateKeyID ? String(privateKeyID).trim().toLowerCase() : privateKeyID;
         username = username ? String(username).trim().toLowerCase() : username;
@@ -10,7 +14,7 @@ const LoginFunctions = {
 
         try {
             await sql.connect(config);
-            const roleQuery = ' RoleName = STUFF( ( ' +
+            const roleQuery = ' RoleNames = STUFF( ( ' +
             '    SELECT  ' + "'" + ','  + "'" + ' + R.Name ' + ' FROM ITCC_Role R(NOLOCK) JOIN ITCC_UserRole UR (NOLOCK) ON (R.ITCC_RoleID = UR.ITCC_RoleID) ' +
             '                JOIN ITCC_Website W1 (NOLOCK) ON (UR.ITCC_WebsiteID = W1.ITCC_WebsiteID) ' +
             '    WHERE ( (UR.ITCC_UserID = WU.ITCC_UserID) AND (W1.PrivateKeyID = @PrivateKeyID) ) ' +
@@ -43,6 +47,10 @@ const LoginFunctions = {
         }
     },
 
+    /*
+        Update's a User's Login Info based on their UserName & Password & 
+        Update the User's UserToken & Login date in SQL Server
+    */
     updateUserLoginInfo: async (config, username, password, privateKeyID, authID) => {
         privateKeyID = privateKeyID ? String(privateKeyID).trim().toLowerCase() : privateKeyID;
         username = username ? String(username).trim().toLowerCase() : username;
@@ -77,6 +85,10 @@ const LoginFunctions = {
         }
     },
 
+    /*
+        Authenticate's a User's Login Info based on a UserToken 
+        Select the User whose associated roles from SQL Server
+    */
     getUserByAuthToken: async (config, privateKeyID, authId) => {
         privateKeyID = privateKeyID ? String(privateKeyID).trim().toLowerCase() : privateKeyID;
 

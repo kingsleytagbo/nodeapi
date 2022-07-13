@@ -4,10 +4,10 @@ const roleNames = "'anonymous', 'subscriber'";
 
 const UserFunctions = {
 
-    getUsers: async (config, privateKeyID, offset, pageSize) => {
-        /*
+    /*
             SELECT a paged list of users & associated roles from SQL Server
-        */
+    */
+    getUsers: async (config, privateKeyID, offset, pageSize) => {
         try {
             await sql.connect(config);
             const roleQuery =
@@ -17,7 +17,7 @@ const UserFunctions = {
             '    WHERE ( (UR.ITCC_UserID = WU.ITCC_UserID) AND (W1.PrivateKeyID = @PrivateKeyID) ) ' +
             '    FOR XML PATH(' + "''" + ') ) ' + ' ,1,1, ' + " '') ";
 
-            let query = ' SELECT ' + roleQuery + ', US.* ';
+            let query = ' SELECT DISTINCT ' + roleQuery + ', US.* ';
             query += ' FROM [ITCC_User] US (NOLOCK) JOIN [ITCC_WebsiteUser] WU (NOLOCK) ';
             query += ' ON (US.ITCC_UserID = WU.ITCC_UserID) ';
             query += ' JOIN [ITCC_Website] WS (NOLOCK) ON (WU.ITCC_WebsiteID = WS.ITCC_WebsiteID) ';
