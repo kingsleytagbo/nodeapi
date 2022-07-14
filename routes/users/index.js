@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const configs = require('../../config');
 const users = require('./user_functions');
-
+const login = require('../login/login_functions');
 
 
 //  http://localhost:3010/api/gallery/FEA91F56-CBE3-4138-8BB6-62F9A5808D57/1
@@ -9,78 +9,107 @@ const users = require('./user_functions');
 // get all users
 router.get("/:siteid/page/:pagenum?", async function (request, response) {
     const siteid = request.params.siteid;
+    const authID = request.headers.authid;
     const pageNum = (request.params.pagenum) ? request.params.pagenum : 1;
     const pageSize = 20; 
     const offset = (pageNum - 1) * pageSize;
 
     const config = configs.find(c => c.privateKeyID === siteid);
+    const roleNames = await login.getUserRolesByAuthToken(config, siteid, authID);
 
-    const authResult = await users.getUsers(config, siteid, offset, pageSize);
-    const result =  authResult.recordset;
+    if (roleNames.indexOf('admin') > -1) {
+        const usersResult = await users.getUsers(config, siteid, offset, pageSize);
+        const result = usersResult.recordset;
+        return response.send(result);
+    }
+    else {
+        return response.send({err: 'you\'re not authorized to see this'});
+    }
 
-    return response.send(result);
 });
 
 // get one user
 router.get("/:siteid/:id", async function (request, response) {
     const siteid = request.params.siteid;
+    const authID = request.headers.authid;
     const id = request.params.id;
-    const config = configs.find(c => c.privateKeyID === siteid);
 
-    const authResult = await users.getUser(config, siteid, id);
-    const result =  authResult.recordset;
-    
-    return response.send(result);
+    const config = configs.find(c => c.privateKeyID === siteid);
+    const roleNames = await login.getUserRolesByAuthToken(config, siteid, authID);
+
+    if (roleNames.indexOf('admin') > -1) {
+        const authResult = await users.getUser(config, siteid, id);
+        const result =  authResult.recordset;
+        return response.send(result);
+    }
+    else {
+        return response.send({err: 'you\'re not authorized to access this'});
+    }
 });
 
 // create a user
 router.post("/:siteid", async function (request, response) {
     const siteid = request.params.siteid;
+    const authID = request.headers.authid;
     const id = request.params.id;
     const firstname = request.body.firstname;
     const lastname = request.body.lastname;
     const username = request.body.username;
     const emailaddress = request.body.emailaddress;
-    console.log({body: request.body});
 
     const config = configs.find(c => c.privateKeyID === siteid);
+    const roleNames = await login.getUserRolesByAuthToken(config, siteid, authID);
 
-    const authResult = await users.createUser(config, siteid, 
-        username, username, username, emailaddress, 1, 1, 0,
-        emailaddress, 1, 1, 1);
-    const result =  authResult.recordset;
-
-    return response.send(result);
+    if (roleNames.indexOf('admin') > -1) {
+        const authResult = await users.createUser(config, siteid, 
+            username, username, username, emailaddress, 1, 1, 0,
+            emailaddress, 1, 1, 1);
+        const result =  authResult.recordset;
+        return response.send(result);
+    }
+    else {
+        return response.send({err: 'you\'re not authorized to see this'});
+    }
 });
 
 // delete a user
 router.delete("/:siteid/:id", async function (request, response) {
     const siteid = request.params.siteid;
+    const authID = request.headers.authid;
     const id = request.params.id;
 
     const config = configs.find(c => c.privateKeyID === siteid);
-    if(id > 1){
+    const roleNames = await login.getUserRolesByAuthToken(config, siteid, authID);
+
+    if (roleNames.indexOf('admin') > -1) {
         const authResult = await users.deleteUser(config, siteid, id);
         const result =  authResult.recordset;
         return response.send(result);
     }
-    else return response.send({'users/delete/a/user': new Date(), id: request.params.id});
+    else {
+        return response.send({err: 'you\'re not authorized to access this'});
+    }
 });
 
 // update a user
 router.put("/:siteid/:id", async function (request, response) {
     const siteid = request.params.siteid;
+    const authID = request.headers.authid;
     const id = request.body.id;
     const username = request.body.username;
     const emailaddress = request.body.emailaddress;
-    //console.log({body: request.body, params: request.params})
 
     const config = configs.find(c => c.privateKeyID === siteid);
+    const roleNames = await login.getUserRolesByAuthToken(config, siteid, authID);
 
-    const authResult = await users.updateUser(config, siteid, id, username, emailaddress);
-    const result =  authResult.recordset;
-
-    return response.send(result);
+    if (roleNames.indexOf('admin') > -1) {
+        const authResult = await users.updateUser(config, siteid, id, username, emailaddress);
+        const result =  authResult.recordset;
+        return response.send(result);
+    }
+    else {
+        return response.send({err: 'you\'re not authorized to access this'});
+    }
 });
 
 module.exports = router;

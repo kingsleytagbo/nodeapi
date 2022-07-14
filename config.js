@@ -8,7 +8,8 @@ const config = [
         options: {
             enableArithAbort: true
         }
-    },
+    }
+    
 ];
 
 module.exports = config;

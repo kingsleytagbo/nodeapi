@@ -89,12 +89,21 @@ const LoginFunctions = {
         Authenticate's a User's Login Info based on a UserToken 
         Select the User whose associated roles from SQL Server
     */
-    getUserByAuthToken: async (config, privateKeyID, authId) => {
+    getUserByAuthToken: async (config, privateKeyID, authID) => {
         privateKeyID = privateKeyID ? String(privateKeyID).trim().toLowerCase() : privateKeyID;
 
         try {
             await sql.connect(config);
+
+            const roleQuery =
+            ' RoleNames = STUFF( ( ' +
+            '    SELECT  ' + "'" + ','  + "'" + ' + R.Name ' + ' FROM ITCC_Role R(NOLOCK) JOIN ITCC_UserRole UR (NOLOCK) ON (R.ITCC_RoleID = UR.ITCC_RoleID) ' +
+            '                JOIN ITCC_Website W1 (NOLOCK) ON (UR.ITCC_WebsiteID = W1.ITCC_WebsiteID) ' +
+            '    WHERE ( (UR.ITCC_UserID = WU.ITCC_UserID) AND (W1.PrivateKeyID = @PrivateKeyID) ) ' +
+            '    FOR XML PATH(' + "''" + ') ) ' + ' ,1,1, ' + " '') ";
+
             let query = ' SELECT US.*';
+            query += ' , ' + roleQuery;
             query += ' FROM [ITCC_User] US (NOLOCK) JOIN [ITCC_WebsiteUser] WU (NOLOCK) ';
             query += ' ON (US.ITCC_UserID = WU.ITCC_UserID) ';
             query += ' JOIN [ITCC_Website] WS (NOLOCK) ON (WU.ITCC_WebsiteID = WS.ITCC_WebsiteID) ';
@@ -106,13 +115,22 @@ const LoginFunctions = {
             const request = new sql.Request();
             request.input('PrivateKeyID', sql.UniqueIdentifier, privateKeyID);
             request.input('AuthID', sql.UniqueIdentifier, authID);
+            
+            const result = await request.query(query);
             return result;
-
         } catch (err) {
             //console.log({getUserByLogin: err});
             throw err
         }
+    },
+
+    getUserRolesByAuthToken: async (config, privateKeyID, authID) => {
+        const authResult = await LoginFunctions.getUserByAuthToken(config, privateKeyID, authID);
+        const authUser = (authResult && authResult.recordset && authResult.recordset.length > 0) ? authResult.recordset[0] : null;
+        const roleNames = (authUser && authUser.RoleNames) ? String(authUser.RoleNames).split(',') : null;
+        return roleNames;
     }
 };
 
 module.exports = LoginFunctions;
+
