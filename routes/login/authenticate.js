@@ -2,27 +2,30 @@ const router = require('express').Router();
 const configs = require('../../config');
 const login = require('./login_functions');
 
-
+// Validates a user's login information based on the username and password
+// Returns the login user's authentication information including a Login Token
 router.post("/:siteid", async (request, response) => {
     try {
-        const siteid = request.params.siteid || request.headers['pin'];
+        const siteid = request.params.siteid;
         const headers = request.headers;
-        const body = request.body;
-        const params = request.params;
-        const queryString = request.query;
+        // parse login and password from headers
+        const base64AuthenticationHeader = (headers.authorization || '').split(' ')[1] || '';
+        const [username, password] = Buffer.from(base64AuthenticationHeader, 'base64').toString().split(':')
 
         const config = configs.find(c => c.privateKeyID === siteid);
-        const loginResult = await login.getUserByLogin(config, body.username, body.emailaddress, params.siteid);
+
+        const loginResult = await login.getUserByLogin(config, username, password, siteid);
         const loginUser =  (loginResult.recordset && loginResult.recordset.length > 0)? loginResult.recordset[0] : null;
-        if(loginUser && loginUser.AuthID){
-            await login.updateUserLoginInfo(config, body.username, body.emailaddress, params.siteid, loginUser.AuthID);
-        }
-        const payload = loginUser;
         
+        if(loginUser && loginUser.AuthID){
+            await login.updateUserLoginInfo(config, username, password, siteid, loginUser.AuthID);
+        }
+
+        const payload = loginUser;
         return response.send(payload);
     }
     catch (err) {
-        return response.send({error: 'an error has occured'});
+        return response.send({error: 'an error has occured', err: err});
     }
 });
 

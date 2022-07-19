@@ -7,6 +7,7 @@ const cors = require('cors');
 // Body Parser Middleware
 app.use(bodyParser.json()); 
 app.use(cors());
+/*
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", '*');
     res.header("Access-Control-Allow-Credentials", true);
@@ -18,14 +19,13 @@ app.use(function(req, res, next) {
     }
     next();
 });
-
+*/
 const server = app.listen(port, function () {
     //console.log('Server is running on: ' + port);
 });
 
 app.get('/', function (request, response) {
     const result = {};
-    console.log({result: result})
     response.send(result);
 });
 

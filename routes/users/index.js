@@ -6,7 +6,7 @@ const login = require('../login/login_functions');
 
 //  http://localhost:3010/api/gallery/FEA91F56-CBE3-4138-8BB6-62F9A5808D57/1
 //  https://nodeapi.launchfeatures.com/api/gallery/88B8B45E-2BE7-44CB-BBEA-547BB9A8C7D5/2
-// get all users
+// get a paginated list of users
 router.get("/:siteid/page/:pagenum?", async function (request, response) {
     const siteid = request.params.siteid;
     const authID = request.headers.authid;
@@ -47,7 +47,7 @@ router.get("/:siteid/:id", async function (request, response) {
     }
 });
 
-// create a user
+// create a new user along with some basic roles needed to access the system
 router.post("/:siteid", async function (request, response) {
     const siteid = request.params.siteid;
     const authID = request.headers.authid;

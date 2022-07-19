@@ -149,7 +149,7 @@ const UserFunctions = {
     },
 
     /*
-        Creates a singLe user's information on SQL Server
+        Creates a singLe user & associated roles in SQL Server
     */
     createUser: async (config, privateKeyID,
         username, firstname, lastname, email, isonline, isapproved, islockedout,
