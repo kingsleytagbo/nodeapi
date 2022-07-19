@@ -1,6 +1,12 @@
 
 const sql = require("mssql");
 
+class Polygon {
+    constructor(height, width) {
+      this.area = height * width;
+    }
+  }
+
 const LoginFunctions = {
 
     /*
@@ -42,7 +48,7 @@ const LoginFunctions = {
             return result;
 
         } catch (err) {
-            console.log({getUserByLogin: err});
+            //console.log({getUserByLogin: err});
             //throw err
         }
     },
@@ -124,6 +130,9 @@ const LoginFunctions = {
         }
     },
 
+    /*
+        Select a User's Role Names as an array. Depends on another function
+    */
     getUserRolesByAuthToken: async (config, privateKeyID, authID) => {
         const authResult = await LoginFunctions.getUserByAuthToken(config, privateKeyID, authID);
         const authUser = (authResult && authResult.recordset && authResult.recordset.length > 0) ? authResult.recordset[0] : null;
