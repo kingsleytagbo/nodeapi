@@ -15,14 +15,16 @@ router.post("/:siteid", async (request, response) => {
         const config = configs.find(c => c.privateKeyID === siteid);
 
         const loginResult = await login.getUserByLogin(config, username, password, siteid);
-        const loginUser =  (loginResult.recordset && loginResult.recordset.length > 0)? loginResult.recordset[0] : null;
+        const loginUser =  (loginResult.recordset && loginResult.recordset.length === 1)? loginResult.recordset[0] : null;
         
         if(loginUser && loginUser.AuthID){
             await login.updateUserLoginInfo(config, username, password, siteid, loginUser.AuthID);
+            return response.send(loginUser);
+        }else{
+            response.set('WWW-Authenticate', 'Basic realm=Authorization Required');
+            return response.sendStatus(401);
         }
 
-        const payload = loginUser;
-        return response.send(payload);
     }
     catch (err) {
         return response.send({error: 'an error has occured', err: err});
