@@ -1,12 +1,5 @@
 
 const sql = require("mssql");
-
-class Polygon {
-    constructor(height, width) {
-      this.area = height * width;
-    }
-  }
-
 const LoginFunctions = {
 
     /*
@@ -48,8 +41,8 @@ const LoginFunctions = {
             return result;
 
         } catch (err) {
-            //console.log({getUserByLogin: err});
-            //throw err
+            console.log({getUserByLogin: err});
+            throw err
         }
     },
 
